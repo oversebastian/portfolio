@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVSB — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --c-bg:#0d0d0b; --c-bg2:#131310; --c-text:#e8e4d9;
+  --c-muted:#7a7668; --c-accent:#c8b87a; --c-border:rgba(232,228,217,.08);
+  --serif:'DM Serif Display',Georgia,serif;
+  --mono:'Space Mono',monospace;
+  --sans:'Inter',sans-serif;
+  --px:3rem;
+}
+@media(max-width:768px){ :root{ --px:1.25rem; } }
+
+html { scroll-behavior:smooth; }
+body {
+  background:var(--c-bg); color:var(--c-text);
+  font-family:var(--sans); font-weight:300; line-height:1.6; overflow-x:hidden;
+}
+@media(pointer:fine){ body{ cursor:none; } }
+
+/* ── CURSOR (desktop only) ── */
+#cursor, #cursor-ring { display:none; }
+@media(pointer:fine){
+  #cursor {
+    display:block; position:fixed; width:8px; height:8px;
+    background:var(--c-accent); border-radius:50%; pointer-events:none;
+    z-index:9999; transform:translate(-50%,-50%);
+    transition:width .3s,height .3s; mix-blend-mode:difference;
+  }
+  #cursor-ring {
+    display:block; position:fixed; width:36px; height:36px;
+    border:1px solid var(--c-accent); border-radius:50%;
+    pointer-events:none; z-index:9998; transform:translate(-50%,-50%); opacity:.5;
+    transition:width .3s,height .3s;
+  }
+}
+
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:1; opacity:.4;
+}
+
+/* ── NAV ── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  padding:1.25rem var(--px);
+  display:flex; justify-content:space-between; align-items:center;
+  border-bottom:1px solid var(--c-border);
+  backdrop-filter:blur(12px); background:rgba(13,13,11,.7);
+}
+.nav-logo { font-family:var(--mono); font-size:13px; letter-spacing:.15em; color:var(--c-accent); text-transform:uppercase; }
+.nav-right { display:flex; align-items:center; gap:2rem; }
+.nav-links { display:flex; gap:2rem; list-style:none; }
+.nav-links a {
+  font-family:var(--mono); font-size:11px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--c-muted); text-decoration:none; transition:color .2s;
+}
+.nav-links a:hover { color:var(--c-text); }
+
+/* hamburger */
+.burger { display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:4px; }
+.burger span { display:block; width:22px; height:1px; background:var(--c-text); transition:transform .3s, opacity .3s; }
+.burger.open span:nth-child(1){ transform:translateY(6px) rotate(45deg); }
+.burger.open span:nth-child(2){ opacity:0; }
+.burger.open span:nth-child(3){ transform:translateY(-6px) rotate(-45deg); }
+
+@media(max-width:768px){
+  .nav-links { display:none; }
+  .burger { display:flex; }
+  .nav-right { gap:1rem; }
+}
+
+/* mobile menu overlay */
+#mobile-menu {
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(13,13,11,.97); backdrop-filter:blur(16px);
+  flex-direction:column; justify-content:center; align-items:center; gap:2.5rem;
+  padding:2rem;
+}
+#mobile-menu.open { display:flex; }
+#mobile-menu a {
+  font-family:var(--serif); font-size:3rem; font-style:italic; color:var(--c-text);
+  text-decoration:none; transition:color .2s;
+}
+#mobile-menu a:hover { color:var(--c-accent); }
+.menu-lang { display:flex; gap:1rem; margin-top:1rem; }
+.menu-lang .lang-btn {
+  font-family:var(--mono); font-size:12px; letter-spacing:.15em; text-transform:uppercase;
+  padding:.5rem 1rem; border:1px solid var(--c-border); background:transparent;
+  color:var(--c-muted); cursor:pointer; border-radius:2px; transition:all .2s;
+}
+.menu-lang .lang-btn.active { background:var(--c-accent); color:var(--c-bg); border-color:var(--c-accent); }
+
+/* LANG SWITCHER desktop */
+.lang-switcher {
+  display:flex; align-items:center;
+  border:1px solid var(--c-border); border-radius:2px; overflow:hidden;
+}
+.lang-btn {
+  font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  padding:.35rem .65rem; background:transparent; color:var(--c-muted);
+  border:none; cursor:pointer; transition:background .2s, color .2s;
+}
+.lang-btn.active { background:var(--c-accent); color:var(--c-bg); }
+.lang-btn:not(.active):hover { color:var(--c-text); }
+.lang-sep { width:1px; height:24px; background:var(--c-border); }
+@media(max-width:768px){ .lang-switcher{ display:none; } }
+
+/* ── HERO ── */
+#hero {
+  min-height:100vh; display:flex; flex-direction:column;
+  justify-content:flex-end; padding:0 var(--px) 4rem; position:relative; overflow:hidden;
+}
+.hero-eyebrow {
+  font-family:var(--mono); font-size:11px; letter-spacing:.2em;
+  color:var(--c-accent); text-transform:uppercase; margin-bottom:1.25rem; opacity:0;
+}
+.hero-title {
+  font-family:var(--serif); font-size:clamp(3.8rem,12vw,11rem);
+  line-height:.92; letter-spacing:-.02em; margin-bottom:2rem; overflow:hidden;
+}
+.hero-title .line { display:block; overflow:hidden; }
+.hero-title .word { display:inline-block; transform:translateY(110%); }
+.hero-title .italic { font-style:italic; color:var(--c-accent); }
+.hero-sub { display:flex; align-items:flex-start; gap:4rem; opacity:0; }
+.hero-desc { font-size:14px; color:var(--c-muted); max-width:300px; line-height:1.8; }
+.hero-scroll {
+  display:flex; align-items:center; gap:1rem;
+  font-family:var(--mono); font-size:11px; letter-spacing:.15em;
+  color:var(--c-muted); text-transform:uppercase; margin-top:.25rem;
+  white-space:nowrap;
+}
+.scroll-line { width:40px; height:1px; background:var(--c-muted); position:relative; overflow:hidden; flex-shrink:0; }
+.scroll-line::after {
+  content:''; position:absolute; left:-100%; top:0; width:100%; height:100%;
+  background:var(--c-accent); animation:slideline 2s ease infinite;
+}
+@keyframes slideline{ 0%{left:-100%} 100%{left:100%} }
+.hero-number {
+  position:absolute; right:var(--px); bottom:4rem;
+  font-family:var(--serif); font-size:18vw; line-height:1;
+  color:transparent; -webkit-text-stroke:1px rgba(200,184,122,.08);
+  pointer-events:none; user-select:none;
+}
+@media(max-width:768px){
+  #hero { padding-bottom:3rem; }
+  .hero-sub { flex-direction:column; gap:1.5rem; }
+  .hero-desc { max-width:100%; }
+  .hero-scroll { display:none; }
+  .hero-number { font-size:35vw; opacity:.5; }
+}
+
+/* ── SECTIONS ── */
+section { padding:6rem var(--px); position:relative; }
+@media(max-width:768px){ section{ padding:4rem var(--px); } }
+
+.section-label {
+  font-family:var(--mono); font-size:11px; letter-spacing:.2em;
+  color:var(--c-accent); text-transform:uppercase; margin-bottom:3rem;
+  display:flex; align-items:center; gap:1.5rem;
+}
+.section-label::before { content:''; display:block; width:24px; height:1px; background:var(--c-accent); }
+
+/* ── ABOUT ── */
+#about { border-top:1px solid var(--c-border); }
+.about-grid { display:grid; grid-template-columns:1fr 1fr; gap:5rem; align-items:start; }
+@media(max-width:900px){ .about-grid{ grid-template-columns:1fr; gap:3rem; } }
+.about-title { font-family:var(--serif); font-size:clamp(2rem,5vw,4.5rem); line-height:1.1; margin-bottom:1.5rem; }
+.about-title .italic { font-style:italic; color:var(--c-accent); }
+.about-text { font-size:14px; color:var(--c-muted); line-height:1.9; margin-bottom:1.25rem; }
+.tags { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1.5rem; }
+.tag {
+  font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  padding:.4rem .9rem; border:1px solid var(--c-border); color:var(--c-muted);
+  border-radius:2px; transition:border-color .2s,color .2s;
+}
+.tag:hover { border-color:var(--c-accent); color:var(--c-accent); }
+.about-stats { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+.stat { padding:1.5rem 0; border-top:1px solid var(--c-border); }
+.stat-num { font-family:var(--serif); font-size:3rem; line-height:1; color:var(--c-accent); margin-bottom:.4rem; }
+.stat-label { font-family:var(--mono); font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:var(--c-muted); }
+
+/* ── PROJECTS ── */
+#projects { border-top:1px solid var(--c-border); }
+.projects-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:3rem; }
+@media(max-width:768px){ .projects-header{ flex-direction:column; align-items:flex-start; gap:1rem; margin-bottom:2rem; } }
+.projects-title { font-family:var(--serif); font-size:clamp(2rem,5vw,4.5rem); line-height:1; }
+.project-item {
+  border-top:1px solid var(--c-border); padding:2rem 0;
+  display:grid; grid-template-columns:auto 1fr auto auto;
+  align-items:center; gap:2rem; position:relative;
+  transition:padding-left .3s ease; overflow:hidden;
+}
+@media(max-width:768px){
+  .project-item {
+    grid-template-columns:auto 1fr auto;
+    gap:1rem; padding:1.5rem 0;
+  }
+  .project-year { display:none; }
+}
+.project-item::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:0;
+  background:rgba(200,184,122,.04); transition:width .4s ease; z-index:0;
+}
+.project-item:hover::before { width:100%; }
+.project-item:hover { padding-left:.75rem; }
+.project-num { font-family:var(--mono); font-size:11px; color:var(--c-muted); letter-spacing:.1em; z-index:1; }
+.project-name { font-family:var(--serif); font-size:clamp(1.4rem,4vw,2.8rem); line-height:1; z-index:1; transition:color .2s; }
+.project-item:hover .project-name { color:var(--c-accent); }
+.project-cat { font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--c-muted); z-index:1; }
+@media(max-width:480px){ .project-cat{ display:none; } }
+.project-year { font-family:var(--mono); font-size:11px; color:var(--c-muted); z-index:1; }
+.project-item:last-child { border-bottom:1px solid var(--c-border); }
+
+/* ── SERVICES ── */
+#services { border-top:1px solid var(--c-border); }
+.services-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid var(--c-border); }
+@media(max-width:900px){ .services-grid{ grid-template-columns:1fr; } }
+.service-item {
+  padding:2.5rem; border-right:1px solid var(--c-border);
+  border-bottom:1px solid var(--c-border); position:relative; overflow:hidden;
+}
+.service-item:nth-child(3n) { border-right:none; }
+.service-item:nth-last-child(-n+3) { border-bottom:none; }
+@media(max-width:900px){
+  .service-item { border-right:none; }
+  .service-item:last-child { border-bottom:none; }
+}
+.service-num { font-family:var(--mono); font-size:11px; color:var(--c-accent); letter-spacing:.1em; margin-bottom:1.25rem; }
+.service-title { font-family:var(--serif); font-size:1.6rem; line-height:1.2; margin-bottom:.75rem; }
+.service-desc { font-size:13px; color:var(--c-muted); line-height:1.8; }
+.service-bg-num {
+  position:absolute; bottom:-1rem; right:1rem;
+  font-family:var(--serif); font-size:7rem; color:transparent;
+  -webkit-text-stroke:1px rgba(200,184,122,.06); pointer-events:none; line-height:1;
+}
+
+/* ── CONTACT ── */
+#contact { border-top:1px solid var(--c-border); padding:8rem var(--px) 5rem; text-align:center; }
+@media(max-width:768px){ #contact{ padding:5rem var(--px) 4rem; } }
+.cta-label {
+  font-family:var(--mono); font-size:11px; letter-spacing:.2em;
+  color:var(--c-accent); text-transform:uppercase; margin-bottom:1.5rem;
+  display:flex; align-items:center; justify-content:center; gap:1.5rem;
+}
+.cta-label::before,.cta-label::after { content:''; display:block; width:24px; height:1px; background:var(--c-accent); }
+.cta-title { font-family:var(--serif); font-size:clamp(2.8rem,9vw,8rem); line-height:.95; margin-bottom:2.5rem; }
+.cta-title .italic { font-style:italic; color:var(--c-accent); }
+.cta-btn {
+  display:inline-flex; align-items:center; gap:1rem; padding:1rem 2rem;
+  border:1px solid var(--c-text); color:var(--c-text);
+  font-family:var(--mono); font-size:11px; letter-spacing:.15em;
+  text-transform:uppercase; text-decoration:none; background:transparent;
+  transition:background .3s,color .3s; border-radius:1px;
+}
+.cta-btn:hover { background:var(--c-text); color:var(--c-bg); }
+.cta-btn .arrow { font-size:16px; transition:transform .2s; }
+.cta-btn:hover .arrow { transform:translate(3px,-3px); }
+.footer-bottom {
+  margin-top:5rem; padding-top:2rem; border-top:1px solid var(--c-border);
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;
+}
+.footer-copy { font-family:var(--mono); font-size:11px; color:var(--c-muted); letter-spacing:.08em; }
+.footer-links { display:flex; gap:1.5rem; list-style:none; flex-wrap:wrap; }
+.footer-links a {
+  font-family:var(--mono); font-size:11px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--c-muted); text-decoration:none; transition:color .2s;
+}
+.footer-links a:hover { color:var(--c-accent); }
+
+/* ── PREVIEW (desktop only) ── */
+#preview {
+  display:none; position:fixed; width:220px; height:160px;
+  pointer-events:none; z-index:200; opacity:0;
+  transform:rotate(-3deg) scale(.9); transition:opacity .25s,transform .25s;
+  overflow:hidden; border-radius:4px;
+}
+@media(pointer:fine){ #preview{ display:block; } }
+#preview.active { opacity:1; transform:rotate(-1deg) scale(1); }
+.preview-inner {
+  width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+  font-family:var(--serif); font-style:italic; font-size:2rem; color:rgba(200,184,122,.7);
+}
+.p1{background:linear-gradient(135deg,#1a1a14,#252518)}
+.p2{background:linear-gradient(135deg,#0f1a16,#182819)}
+.p3{background:linear-gradient(135deg,#1a1410,#281e12)}
+.p4{background:linear-gradient(135deg,#0f1219,#121828)}
+
+/* ── MARQUEE ── */
+.marquee-wrap {
+  border-top:1px solid var(--c-border); border-bottom:1px solid var(--c-border);
+  padding:1.25rem 0; overflow:hidden; background:var(--c-bg2);
+}
+.marquee-track { display:flex; white-space:nowrap; animation:marquee 20s linear infinite; }
+.marquee-item {
+  font-family:var(--serif); font-size:1.05rem; font-style:italic;
+  color:var(--c-muted); padding:0 2.5rem; display:flex; align-items:center; gap:2.5rem;
+}
+.marquee-item::after { content:'◆'; font-style:normal; color:var(--c-accent); font-size:.5rem; }
+@keyframes marquee{ 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+.reveal { opacity:0; transform:translateY(30px); }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div id="preview"><div class="preview-inner p1" id="pv-inner">Brand</div></div>
+
+<!-- mobile overlay menu -->
+<div id="mobile-menu">
+  <a href="#about" data-i18n="nav.about" onclick="closeMobileMenu()">About</a>
+  <a href="#projects" data-i18n="nav.work" onclick="closeMobileMenu()">Work</a>
+  <a href="#services" data-i18n="nav.services" onclick="closeMobileMenu()">Services</a>
+  <a href="#contact" data-i18n="nav.contact" onclick="closeMobileMenu()">Contact</a>
+  <div class="menu-lang">
+    <button class="lang-btn active" id="mob-btn-en" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" id="mob-btn-ru" onclick="setLang('ru')">RU</button>
+  </div>
+</div>
+
+<nav>
+  <div class="nav-logo">OVSB</div>
+  <div class="nav-right">
+    <ul class="nav-links">
+      <li><a href="#about" data-i18n="nav.about">About</a></li>
+      <li><a href="#projects" data-i18n="nav.work">Work</a></li>
+      <li><a href="#services" data-i18n="nav.services">Services</a></li>
+      <li><a href="#contact" data-i18n="nav.contact">Contact</a></li>
+    </ul>
+    <div class="lang-switcher">
+      <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+      <div class="lang-sep"></div>
+      <button class="lang-btn" id="btn-ru" onclick="setLang('ru')">RU</button>
+    </div>
+    <button class="burger" id="burger" onclick="toggleMobileMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<section id="hero">
+  <div class="hero-eyebrow" data-i18n="hero.eyebrow">Graphic Designer & ADS Specialist</div>
+  <h1 class="hero-title">
+    <span class="line"><span class="word">Daniil</span></span>
+    <span class="line"><span class="word italic" data-i18n="hero.name">Oversebastian</span></span>
+    <span class="line"><span class="word" data-i18n="hero.location">Ufa.</span></span>
+  </h1>
+  <div class="hero-sub">
+    <p class="hero-desc" data-i18n="hero.desc">Crafting visual identities & advertising that leaves a mark. Available for international projects.</p>
+    <div class="hero-scroll">
+      <div class="scroll-line"></div>
+      <span data-i18n="hero.scroll">Scroll to explore</span>
+    </div>
+  </div>
+  <div class="hero-number">25</div>
+</section>
+
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="marquee-item" data-i18n-m="m1">Graphic Design</div>
+    <div class="marquee-item" data-i18n-m="m2">Brand Identity</div>
+    <div class="marquee-item" data-i18n-m="m3">Advertising</div>
+    <div class="marquee-item" data-i18n-m="m4">Motion Design</div>
+    <div class="marquee-item" data-i18n-m="m5">Visual Strategy</div>
+    <div class="marquee-item" data-i18n-m="m1">Graphic Design</div>
+    <div class="marquee-item" data-i18n-m="m2">Brand Identity</div>
+    <div class="marquee-item" data-i18n-m="m3">Advertising</div>
+    <div class="marquee-item" data-i18n-m="m4">Motion Design</div>
+    <div class="marquee-item" data-i18n-m="m5">Visual Strategy</div>
+  </div>
+</div>
+
+<section id="about">
+  <div class="section-label" data-i18n="about.label">About me</div>
+  <div class="about-grid">
+    <div>
+      <h2 class="about-title reveal"><span data-i18n="about.title1">Creating visuals that </span><span class="italic" data-i18n="about.title2">speak</span><span data-i18n="about.title3"> before words do</span></h2>
+      <p class="about-text reveal" data-i18n="about.p1">I'm a freelance graphic designer and advertising specialist based in Ufa, Russia. Self-taught, independent, and detail-obsessed.</p>
+      <p class="about-text reveal" data-i18n="about.p2">Currently finishing my advertising degree while working with clients across branding, digital ads, and visual identity. Open to remote and international work.</p>
+      <div class="tags reveal">
+        <span class="tag">Figma</span>
+        <span class="tag">Adobe PS</span>
+        <span class="tag">DaVinci Resolve</span>
+        <span class="tag" data-i18n="tag.brand">Brand Identity</span>
+        <span class="tag" data-i18n="tag.motion">Motion</span>
+        <span class="tag" data-i18n="tag.ads">Advertising</span>
+        <span class="tag" data-i18n="tag.strategy">Strategy</span>
+      </div>
+    </div>
+    <div class="about-stats">
+      <div class="stat reveal"><div class="stat-num">4+</div><div class="stat-label" data-i18n="stat.years">Years freelance</div></div>
+      <div class="stat reveal"><div class="stat-num">∞</div><div class="stat-label" data-i18n="stat.details">Details matter</div></div>
+      <div class="stat reveal"><div class="stat-num">RU</div><div class="stat-label" data-i18n="stat.based">Based in Ufa</div></div>
+      <div class="stat reveal"><div class="stat-num">EN</div><div class="stat-label" data-i18n="stat.intl">Available intl.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="projects-header">
+    <div class="section-label" style="margin-bottom:0" data-i18n="projects.label">Selected work</div>
+    <h2 class="projects-title reveal" data-i18n="projects.title">Projects</h2>
+  </div>
+  <div class="project-item" data-preview="p1">
+    <span class="project-num">01</span>
+    <span class="project-name" data-i18n="p1.name">Brand Identity</span>
+    <span class="project-cat" data-i18n="p1.cat">Branding / Print</span>
+    <span class="project-year">2024</span>
+  </div>
+  <div class="project-item" data-preview="p2">
+    <span class="project-num">02</span>
+    <span class="project-name" data-i18n="p2.name">Ad Campaign</span>
+    <span class="project-cat" data-i18n="p2.cat">Advertising / Digital</span>
+    <span class="project-year">2024</span>
+  </div>
+  <div class="project-item" data-preview="p3">
+    <span class="project-num">03</span>
+    <span class="project-name" data-i18n="p3.name">Visual Identity</span>
+    <span class="project-cat" data-i18n="p3.cat">Identity / Motion</span>
+    <span class="project-year">2023</span>
+  </div>
+  <div class="project-item" data-preview="p4">
+    <span class="project-num">04</span>
+    <span class="project-name" data-i18n="p4.name">Poster Series</span>
+    <span class="project-cat" data-i18n="p4.cat">Print / Editorial</span>
+    <span class="project-year">2023</span>
+  </div>
+</section>
+
+<section id="services">
+  <div class="section-label" data-i18n="services.label">What I do</div>
+  <div class="services-grid">
+    <div class="service-item reveal">
+      <div class="service-num">01</div>
+      <h3 class="service-title" data-i18n="s1.title">Brand Identity</h3>
+      <p class="service-desc" data-i18n="s1.desc">Logo systems, visual language, brand guidelines. From concept to final assets ready for any medium.</p>
+      <div class="service-bg-num">01</div>
+    </div>
+    <div class="service-item reveal">
+      <div class="service-num">02</div>
+      <h3 class="service-title" data-i18n="s2.title">Advertising</h3>
+      <p class="service-desc" data-i18n="s2.desc">Campaign concepts, creatives for digital and print. Strategy-aware design that converts.</p>
+      <div class="service-bg-num">02</div>
+    </div>
+    <div class="service-item reveal">
+      <div class="service-num">03</div>
+      <h3 class="service-title" data-i18n="s3.title">Motion & Video</h3>
+      <p class="service-desc" data-i18n="s3.desc">Short-form motion graphics, reels, and video editing. DaVinci Resolve-based workflow.</p>
+      <div class="service-bg-num">03</div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="cta-label" data-i18n="cta.label">Let's work together</div>
+  <h2 class="cta-title reveal"><span data-i18n="cta.title1">Let's make</span><br><span data-i18n="cta.title2">something </span><span class="italic" data-i18n="cta.title3">real</span></h2>
+  <a href="https://behance.net/oversebastian" target="_blank" class="cta-btn">
+    <span data-i18n="cta.btn">View on Behance</span> <span class="arrow">↗</span>
+  </a>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2025 OVSB — Daniil Oversebastian</span>
+    <ul class="footer-links">
+      <li><a href="https://behance.net/oversebastian" target="_blank">Behance</a></li>
+      <li><a href="#">Telegram</a></li>
+      <li><a href="#">Threads</a></li>
+    </ul>
+  </div>
+</section>
+
+<script>
+// ── TRANSLATIONS ──────────────────────────────────────────────
+const T = {
+  en:{
+    'nav.about':'About','nav.work':'Work','nav.services':'Services','nav.contact':'Contact',
+    'hero.eyebrow':'Graphic Designer & ADS Specialist',
+    'hero.name':'Oversebastian','hero.location':'Ufa.',
+    'hero.desc':'Crafting visual identities & advertising that leaves a mark. Available for international projects.',
+    'hero.scroll':'Scroll to explore',
+    'm1':'Graphic Design','m2':'Brand Identity','m3':'Advertising','m4':'Motion Design','m5':'Visual Strategy',
+    'about.label':'About me',
+    'about.title1':'Creating visuals that ','about.title2':'speak','about.title3':' before words do',
+    'about.p1':"I'm a freelance graphic designer and advertising specialist based in Ufa, Russia. Self-taught, independent, and detail-obsessed.",
+    'about.p2':'Currently finishing my advertising degree while working with clients across branding, digital ads, and visual identity. Open to remote and international work.',
+    'tag.brand':'Brand Identity','tag.motion':'Motion','tag.ads':'Advertising','tag.strategy':'Strategy',
+    'stat.years':'Years freelance','stat.details':'Details matter','stat.based':'Based in Ufa','stat.intl':'Available intl.',
+    'projects.label':'Selected work','projects.title':'Projects',
+    'p1.name':'Brand Identity','p1.cat':'Branding / Print',
+    'p2.name':'Ad Campaign','p2.cat':'Advertising / Digital',
+    'p3.name':'Visual Identity','p3.cat':'Identity / Motion',
+    'p4.name':'Poster Series','p4.cat':'Print / Editorial',
+    'services.label':'What I do',
+    's1.title':'Brand Identity','s1.desc':'Logo systems, visual language, brand guidelines. From concept to final assets ready for any medium.',
+    's2.title':'Advertising','s2.desc':'Campaign concepts, creatives for digital and print. Strategy-aware design that converts.',
+    's3.title':'Motion & Video','s3.desc':'Short-form motion graphics, reels, and video editing. DaVinci Resolve-based workflow.',
+    'cta.label':"Let's work together",
+    'cta.title1':"Let's make",'cta.title2':'something ','cta.title3':'real',
+    'cta.btn':'View on Behance',
+    'pv.p1':'Brand','pv.p2':'Campaign','pv.p3':'Identity','pv.p4':'Poster',
+  },
+  ru:{
+    'nav.about':'Обо мне','nav.work':'Работы','nav.services':'Услуги','nav.contact':'Контакт',
+    'hero.eyebrow':'Графический дизайнер & Специалист по рекламе',
+    'hero.name':'Oversebastian','hero.location':'Уфа.',
+    'hero.desc':'Создаю визуальные идентичности и рекламу, которые запоминаются. Открыт для международных проектов.',
+    'hero.scroll':'Листай вниз',
+    'm1':'Графический дизайн','m2':'Айдентика','m3':'Реклама','m4':'Моушн-дизайн','m5':'Визуальная стратегия',
+    'about.label':'Обо мне',
+    'about.title1':'Создаю визуальное, которое ','about.title2':'говорит','about.title3':' раньше слов',
+    'about.p1':'Я фриланс-графический дизайнер и специалист по рекламе из Уфы. Самоучка, независимый и помешанный на деталях.',
+    'about.p2':'Заканчиваю рекламный факультет и параллельно работаю с клиентами над брендингом, диджитал-рекламой и айдентикой. Открыт для удалённых и международных проектов.',
+    'tag.brand':'Айдентика','tag.motion':'Моушн','tag.ads':'Реклама','tag.strategy':'Стратегия',
+    'stat.years':'Лет фриланса','stat.details':'Детали важны','stat.based':'Уфа, Россия','stat.intl':'Интл. проекты',
+    'projects.label':'Избранные работы','projects.title':'Проекты',
+    'p1.name':'Айдентика бренда','p1.cat':'Брендинг / Принт',
+    'p2.name':'Рекламная кампания','p2.cat':'Реклама / Диджитал',
+    'p3.name':'Визуальная идентичность','p3.cat':'Айдентика / Моушн',
+    'p4.name':'Серия постеров','p4.cat':'Принт / Редакционный',
+    'services.label':'Что я делаю',
+    's1.title':'Айдентика бренда','s1.desc':'Лого-системы, визуальный язык, брендбуки. От концепции до готовых материалов для любого носителя.',
+    's2.title':'Реклама','s2.desc':'Концепции кампаний, креативы для диджитал и принта. Дизайн с пониманием стратегии и конверсии.',
+    's3.title':'Моушн и видео','s3.desc':'Короткий моушн, рилсы, видеомонтаж. Рабочий процесс на базе DaVinci Resolve.',
+    'cta.label':'Давай работать вместе',
+    'cta.title1':'Давай сделаем','cta.title2':'что-то ','cta.title3':'настоящее',
+    'cta.btn':'Посмотреть на Behance',
+    'pv.p1':'Бренд','pv.p2':'Кампания','pv.p3':'Айдентика','pv.p4':'Постеры',
+  }
+};
+
+let currentLang='en';
+
+function detectLang(){
+  const langs=navigator.languages||[navigator.language||'en'];
+  for(const l of langs){ if(l.toLowerCase().startsWith('ru')) return 'ru'; }
+  return 'en';
+}
+
+function setLang(lang){
+  currentLang=lang;
+  const t=T[lang];
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(t[k]!==undefined) el.textContent=t[k];
+  });
+  document.querySelectorAll('[data-i18n-m]').forEach(el=>{
+    const k=el.getAttribute('data-i18n-m');
+    if(t[k]!==undefined) el.textContent=t[k];
+  });
+  ['btn-en','btn-ru'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('active', id==='btn-'+lang);
+  });
+  ['mob-btn-en','mob-btn-ru'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('active', id==='mob-btn-'+lang);
+  });
+  document.querySelectorAll('.project-item').forEach(item=>{
+    const pk=item.getAttribute('data-preview');
+    item._previewLabel=t['pv.'+pk]||'';
+  });
+}
+
+// ── MOBILE MENU ───────────────────────────────────────────────
+function toggleMobileMenu(){
+  const m=document.getElementById('mobile-menu');
+  const b=document.getElementById('burger');
+  m.classList.toggle('open');
+  b.classList.toggle('open');
+  document.body.style.overflow=m.classList.contains('open')?'hidden':'';
+}
+function closeMobileMenu(){
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('burger').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+// ── CURSOR ────────────────────────────────────────────────────
+const cursor=document.getElementById('cursor');
+const ring=document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+if(window.matchMedia('(pointer:fine)').matches){
+  document.addEventListener('mousemove',e=>{
+    mx=e.clientX; my=e.clientY;
+    cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+  });
+  (function animRing(){
+    rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+    ring.style.left=rx+'px'; ring.style.top=ry+'px';
+    requestAnimationFrame(animRing);
+  })();
+  document.querySelectorAll('a,button,.project-item,.cta-btn').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{cursor.style.width='16px';cursor.style.height='16px';ring.style.width='56px';ring.style.height='56px';});
+    el.addEventListener('mouseleave',()=>{cursor.style.width='8px';cursor.style.height='8px';ring.style.width='36px';ring.style.height='36px';});
+  });
+}
+
+// ── GSAP ─────────────────────────────────────────────────────
+gsap.registerPlugin(ScrollTrigger);
+gsap.to('.hero-title .word',{translateY:'0%',duration:1.1,ease:'power4.out',stagger:.12,delay:.3});
+gsap.to('.hero-eyebrow',{opacity:1,duration:.8,delay:.8});
+gsap.to('.hero-sub',{opacity:1,duration:.8,delay:1.0});
+gsap.utils.toArray('.reveal').forEach(el=>{
+  gsap.fromTo(el,{opacity:0,y:40},{opacity:1,y:0,duration:.9,ease:'power3.out',
+    scrollTrigger:{trigger:el,start:'top 88%'}});
+});
+
+// ── PROJECT PREVIEW ───────────────────────────────────────────
+const preview=document.getElementById('preview');
+const pvInner=document.getElementById('pv-inner');
+document.querySelectorAll('.project-item').forEach(item=>{
+  const pk=item.getAttribute('data-preview');
+  item._previewLabel=T[currentLang]['pv.'+pk]||'';
+  item.addEventListener('mouseenter',()=>{
+    pvInner.textContent=item._previewLabel;
+    pvInner.className='preview-inner '+pk;
+    preview.classList.add('active');
+  });
+  item.addEventListener('mouseleave',()=>preview.classList.remove('active'));
+});
+document.addEventListener('mousemove',e=>{
+  preview.style.left=(e.clientX+20)+'px';
+  preview.style.top=(e.clientY-80)+'px';
+});
+
+// ── INIT ─────────────────────────────────────────────────────
+setLang(detectLang());
+</script>
+</body>
+</html>
